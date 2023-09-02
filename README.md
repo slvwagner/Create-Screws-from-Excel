@@ -1,3 +1,6 @@
 # Create-Screws-from-Excel
-The program is reading data from the Excel list to genereate Screws. It uses the bossard data from der Hompage. www.bossard.com \
-You can filter for the BN number e.g. BN7 and define minimal an maxial screw lenght and the nominal screw diameter eg. M1.6
+The programme reads data from the Excel list to generate bolts. It uses the Bossard data from their website. www.bossard.com \
+You can filter for BN number e.g. BN7 and define minimum and maximum screw length and nominal screw diameter e.g. M1.6.
+
+Das Programm liest Daten aus der Excel-Liste ein, um Schrauben zu erzeugen. Es verwendet die Bossardaten von der Hompage. www.bossard.com \
+Sie können nach der BN-Nummer filtern, z.B. BN7, und die minimale und maximale Schraubenlänge und den Schraubendurchmesser definieren, z.B. M1.6
