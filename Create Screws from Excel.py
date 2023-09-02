@@ -11,10 +11,9 @@ def get_user_input(ui):
 
     # Get user input for the filter criteria
     user_input['Column1'] = (ui.inputBox('BN Nummer (BN7):'))[0]
-    user_input['Column2Min'] = (ui.inputBox('Länge min:'))[0]
-    user_input['Column2Max'] = (ui.inputBox('Länge max:'))[0]
+    user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
+    user_input['Column2Max'] = (ui.inputBox('Länge max [mm]:'))[0]
     user_input['Column3'] = (ui.inputBox('Gewinde (M3):'))[0]
-
     return user_input
 
 def run(context):
@@ -122,7 +121,7 @@ def run(context):
             sketch = sketches.add(xyPlane)
 
             ########################################################################################################
-            # create body 
+            # create screw body 
             #####################################################################################################
 
             # Draw connected lines.
