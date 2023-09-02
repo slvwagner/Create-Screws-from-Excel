@@ -24,6 +24,7 @@ def run(context):
         try:
             import numpy as np
             import pandas as pd
+
         # intall packages needed for script and import
         except:
             subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", 'numpy'])
@@ -35,12 +36,11 @@ def run(context):
         app = adsk.core.Application.get()
         ui  = app.userInterface
         doc = app.activeDocument
-
+        
         # Check that the active document has been saved. 
         if not doc.isSaved:
             ui.messageBox('The active document must be saved before running this script.')
             return
-
 
         ########## select file with scew data 
         # Set styles of file dialog.
