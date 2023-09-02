@@ -4,8 +4,6 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
 import subprocess, sys
 import math
-import os
-wd = os.getcwd()
 
 def get_user_input(ui):
     # Create a dictionary to store user input
@@ -109,6 +107,7 @@ def run(context):
             s =     (filtered_df["s"].iloc[ii]/2)/ScaleFactor #Innensechskantschlüsselweite
             Part_NB = filtered_df["BN_nb"].iloc[ii]+ " " + filtered_df["gewinde"].iloc[ii] + "," + str(filtered_df["Artikelnummer"].iloc[ii]) # Part number for fusion 360 file
             gewinde = filtered_df["gewinde"].iloc[ii] # Gewinde definition (Nennduchmesser und Steigung)
+            steigung = filtered_df["steigung"].iloc[ii] # Gewinde definition (Nennduchmesser und Steigung)
 
             # Create document (new file in Fusion360)
             doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
