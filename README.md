@@ -1,4 +1,4 @@
-# Create-Screws-from-Excel
+# Create-Screws-from-Excel with Fusion 360
 The programme reads data from the Excel list to generate bolts. It uses the Bossard data from their website. www.bossard.com \
 You can filter for BN number e.g. BN7 and define minimum and maximum screw length and nominal screw diameter e.g. M1.6.
 
