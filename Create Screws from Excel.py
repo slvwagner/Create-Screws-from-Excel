@@ -49,8 +49,6 @@ def run(context):
         app = adsk.core.Application.get()
         ui  = app.userInterface
         doc = app.activeDocument
-        
-        app.ac
 
         # Check that the active document has been saved. 
         if not doc.isSaved:
