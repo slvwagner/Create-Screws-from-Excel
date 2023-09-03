@@ -4,6 +4,7 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
 import subprocess, sys
 import math
+import re #regex
 
 def get_user_input(ui):
     # Create a dictionary to store user input
@@ -11,8 +12,8 @@ def get_user_input(ui):
 
     # Get user input for the filter criteria
     user_input['Column1'] = (ui.inputBox('BN Nummer (BN7):'))[0]
-    user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
-    user_input['Column2Max'] = (ui.inputBox('Länge max [mm]:'))[0]
+    #user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
+    #user_input['Column2Max'] = (ui.inputBox('Länge max [mm]:'))[0]
     user_input['Column3'] = (ui.inputBox('Gewinde (M3):'))[0]
     return user_input
 
@@ -83,35 +84,44 @@ def run(context):
         ########################################################################################################
         # Get user input for filter criteria and show items to be created to user
         ########################################################################################################
-        # filter_criteria = get_user_input(ui)
-
-        # # Convert the user input for Column2Min and Column2Max to numeric values
-        # user_column1 = filter_criteria['Column1']
-        # user_column2_min = float(filter_criteria['Column2Min'])
-        # user_column2_max = float(filter_criteria['Column2Max'])
-        # user_column3 = filter_criteria['Column3']
-
+        filter_criteria = get_user_input(ui)
 
         # Convert the user input for Column2Min and Column2Max to numeric values
-        user_column1 = "BN7"
-        user_column2_min = float(0)
-        user_column2_max = float(5)
-        user_column3 = "M1.6"
+        user_column1 = filter_criteria['Column1']
+        #user_column2_min = float(filter_criteria['Column2Min'])
+        #user_column2_max = float(filter_criteria['Column2Max'])
+        user_column3 = filter_criteria['Column3']
 
-        # Define filtering conditions based on user input
+        # # Convert the user input for Column2Min and Column2Max to numeric values
+        # user_column1 = "BN7"
+        user_column2_min = float(0)
+        user_column2_max = float(5000)
+        # user_column3 = "M1.6"
+
+
+        # Modify the condition to use a regex with word boundaries
         filter_condition = (df['NormStandart'] == True) & \
-                           (df['BN_nb'].str.contains(user_column1, case=False, na=False)) & \
-                           (df['L_numeric'] > user_column2_min) & \
-                           (df['L_numeric'] < user_column2_max) & \
-                           (df['d1'].str.contains(user_column3, case=False, na=False))
+                        (df['BN_nb'].str.contains(fr'\b{re.escape(user_column1)}\b', regex=True, case=False, na=False)) & \
+                        (df['L_numeric'] > user_column2_min) & \
+                        (df['L_numeric'] < user_column2_max) & \
+                        (df['d1'].str.contains(fr'\b{re.escape(user_column3)}\b', regex=True, case=False, na=False))
+
+
+        # # Define filtering conditions based on user input
+        # filter_condition = (df['NormStandart'] == True) & \
+        #                    (df['BN_nb'].str.contains(user_column1, case=False, na=False)) & \
+        #                    (df['L_numeric'] > user_column2_min) & \
+        #                    (df['L_numeric'] < user_column2_max) & \
+        #                    (df['d1'].str.contains(user_column3, case=False, na=False))
 
         # Filter the DataFrame
         filtered_df = df[filter_condition]
 
         # Convert the filtered DataFrame to a string 
         filtered_df_str = filtered_df[["BN_nb", 'gewinde',"L_numeric"]].to_string(index=False)  # This converts the DataFrame to a string without the index
+
         # Display the filtered results in a message box
-        # ui.messageBox("Filtered Results:\n\n" + filtered_df_str)
+        ui.messageBox("Filtered Results:\n\n" + filtered_df_str)
         
         ########################################################################################################
         # create all screws according to filter
@@ -129,19 +139,9 @@ def run(context):
                 b = (filtered_df["L_numeric"].iloc[ii])/ScaleFactor #if screws with full lenght use lenght
             k =     (filtered_df["k"].iloc[ii])/ScaleFactor #Schraubenkopfhöhe
             s =     (filtered_df["s"].iloc[ii]/2)/ScaleFactor #Innensechskantschlüsselweite
-            Part_NB = filtered_df["BN_nb"].iloc[ii]+ " " + filtered_df["Bezeichnung"].iloc[ii] + "," + str(filtered_df["Artikelnummer"].iloc[ii]) # Part number for fusion 360 file
+            Part_NB = filtered_df["BN_nb"].iloc[ii]+ " " + filtered_df["d1"].iloc[ii] + "x" + filtered_df["L"].iloc[ii] + "," + str(filtered_df["Artikelnummer"].iloc[ii]) # Part number for fusion 360 file
             gewinde = filtered_df["gewinde"].iloc[ii] # Gewinde definition (Nennduchmesser und Steigung)
             steigung = filtered_df["steigung"].iloc[ii]/ScaleFactor # Gewinde definition (Nennduchmesser und Steigung)
-
-            # L = 2.5
-            # d1 =0.3/2
-            # steigung = 0.05
-            # k = 0.3
-            # d2 = 0.55/2
-            # t_min = 0.13
-            # s = 0.25
-            # b = 1.8
-            # gewinde = "M3x0.5"
 
             # Create document (new file in Fusion360)
             ########################################################################################################
@@ -237,9 +237,21 @@ def run(context):
                 
             # create the thread information 
             threadInfo = threadFeatures.createThreadInfo(False, "ISO Metric profile", gewinde, "6g")
-                
+
+            index = 0  
+            for ii in range(0,len(screw.sideFaces)):
+                sideface = screw.sideFaces.item(ii)
+                check_cylinder = (sideface.geometry.surfaceType == 1)
+                #print("ii:",ii,sideface.geometry.objectType, sideface.geometry.surfaceType)
+                if(check_cylinder): 
+                    check_radius = (sideface.geometry.radius == d1)
+                    #print("Radius:",sideface.geometry.radius, check_radius)
+                    index = ii
+                    break
+            
             # get the face the thread will be applied to
-            sideface = screw.sideFaces.item(3)
+            sideface = screw.sideFaces.item(index)                
+                
             faces = adsk.core.ObjectCollection.create()
             faces.add(sideface)
                 
@@ -253,6 +265,12 @@ def run(context):
 
             # Save file 
             returnValue  = doc.saveAs(Part_NB,parentFolder ,"","")
+            if not returnValue: ui.messageBox("Could save file:"+ Part_NB)
+            
+            # # close document
+            # returnValue = doc.close(False)
+            # if not returnValue: ui.messageBox("Could close the document:"+ Part_NB)
+
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
