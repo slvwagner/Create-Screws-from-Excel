@@ -10,11 +10,18 @@ def get_user_input(ui):
     # Create a dictionary to store user input
     user_input = {}
 
+    # # Get user input for the filter criteria
+    # user_input['Column1'] = (ui.inputBox('BN Nummer (BN7):'))[0]
+    # user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
+    # user_input['Column2Max'] = (ui.inputBox('Länge max [mm]:'))[0]
+    # user_input['Column3'] = (ui.inputBox('Gewinde (M3):'))[0]
+
     # Get user input for the filter criteria
     user_input['Column1'] = (ui.inputBox('BN Nummer (BN7):'))[0]
-    #user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
+    user_input['Column2Min'] = (ui.inputBox('Länge min [mm]:'))[0]
     #user_input['Column2Max'] = (ui.inputBox('Länge max [mm]:'))[0]
     user_input['Column3'] = (ui.inputBox('Gewinde (M3):'))[0]
+    
     return user_input
 
 def run(context):
@@ -43,6 +50,8 @@ def run(context):
         ui  = app.userInterface
         doc = app.activeDocument
         
+        app.ac
+
         # Check that the active document has been saved. 
         if not doc.isSaved:
             ui.messageBox('The active document must be saved before running this script.')
@@ -88,16 +97,15 @@ def run(context):
 
         # Convert the user input for Column2Min and Column2Max to numeric values
         user_column1 = filter_criteria['Column1']
-        #user_column2_min = float(filter_criteria['Column2Min'])
-        #user_column2_max = float(filter_criteria['Column2Max'])
+        user_column2_min = float(filter_criteria['Column2Min'])
+        # user_column2_max = float(filter_criteria['Column2Max'])
         user_column3 = filter_criteria['Column3']
 
-        # # Convert the user input for Column2Min and Column2Max to numeric values
+        # Convert the user input for Column2Min and Column2Max to numeric values
         # user_column1 = "BN7"
-        user_column2_min = float(0)
+        # user_column2_min = float(0)
         user_column2_max = float(5000)
         # user_column3 = "M1.6"
-
 
         # Modify the condition to use a regex with word boundaries
         filter_condition = (df['NormStandart'] == True) & \
