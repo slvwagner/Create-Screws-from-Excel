@@ -180,6 +180,9 @@ def run(context):
             line5 = lines.addByTwoPoints(line4.endSketchPoint, adsk.core.Point3D.create( 0, d2, 0))
             line6 = lines.addByTwoPoints(line5.endSketchPoint, adsk.core.Point3D.create( 0, d1, 0))
 
+            # Add a fillet.
+            arc = sketch.sketchCurves.sketchArcs.addFillet(line4, line4.endSketchPoint.geometry, line5, line5.startSketchPoint.geometry, steigung/2)
+
             # Get the first profile from the sketch
             prof = sketch.profiles.item(0)  
             
