@@ -37,6 +37,7 @@ def run(context):
 
         # intall packages needed for script and import
         except:
+            subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", "--upgrade" "pip"])
             subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", 'numpy'])
             subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", 'pandas'])
             import numpy as np

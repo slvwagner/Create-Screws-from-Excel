@@ -12,7 +12,7 @@ def run(context):
 
         PathToPyton = sys.path
 
-        print("\n********************************************************\n")
+        print("\n********************************************************")
         for ii in PathToPyton:
             print(ii)
 
