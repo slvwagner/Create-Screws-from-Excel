@@ -12,17 +12,17 @@ def run(context):
 
         PathToPyton = sys.path
 
-        print("\n********************************************************")
+        print("\n********************************************************\n")
         for ii in PathToPyton:
             print(ii)
 
         try:
-            subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m pip install --upgrade pip"])
+            subprocess.check_call([PathToPyton[0] + '\\Python\\python.exe', "-m pip install --upgrade pip"])
         except:
             ui.messageBox("Failed to upgrade pip")
         try:
-            subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", "numpy"])
-            subprocess.check_call([PathToPyton[2] + '\\Python\\python.exe', "-m", "pip", "install", "pandas"])
+            subprocess.check_call([PathToPyton[0] + '\\Python\\python.exe', "-m", "pip", "install", "numpy"])
+            subprocess.check_call([PathToPyton[0] + '\\Python\\python.exe', "-m", "pip", "install", "pandas"])
             ui.messageBox("Packages installed.")
         except:
             ui.messageBox("Failed to install packages.")
@@ -32,7 +32,7 @@ def run(context):
             import pandas as pd
             ui.messageBox("Package test import succeeded!")
         except:
-            ui.messageBox("Failed when importing packages.")
+            ui.messageBox("Importing packages failed")
 
     except:
         if ui:
