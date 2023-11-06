@@ -18,12 +18,7 @@ def run(context):
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
-        tray_doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
-        tray_design = tray_doc.products[0]
-        root = tray_design.rootComponent
-        units_mgr = tray_design.unitsManager
-        units_mgr.distanceDisplayUnits = adsk.fusion.DistanceUnits.MillimeterDistanceUnits
-
+        
         #############################################################################################
         # Get the material libraries
         #############################################################################################
@@ -60,29 +55,7 @@ def run(context):
 
         pcb = wagnius.materials.itemByName('1.0037')
         steel = wagnius.materials.itemByName('1.4301')
-        
-        #############################################################################################
-        # User parameter
-        #############################################################################################
-        horizontal = adsk.fusion.DimensionOrientations.HorizontalDimensionOrientation
-        vertical = adsk.fusion.DimensionOrientations.VerticalDimensionOrientation
-
-        s = 2.5
-        x = 7.0
-        y = 5.0
-        c = (r(0.8 + 2, 2)) / 10
-        w = c * 2 + r(x, s)
-        d = c * 2 + r(y, s)
-
-        parameters = tray_design.userParameters
-        parameters.add('Space', adsk.core.ValueInput.createByReal(s), 'mm', '')
-        parameters.add('HoleDiameter', adsk.core.ValueInput.createByReal(0.42), 'mm', '')
-        parameters.add('Width', adsk.core.ValueInput.createByReal(x), 'mm', '')
-        parameters.add('Depth', adsk.core.ValueInput.createByReal(y), 'mm', '')
-        parameters.add('Height', adsk.core.ValueInput.createByReal(0.2), 'mm', '')
-        parameters.add('HoleClearance', adsk.core.ValueInput.createByReal(c), 'mm', '')
-        parameters.add('MountingWidth', adsk.core.ValueInput.createByString("ceil(Width/Space)*Space"), 'mm', '')
-        parameters.add('MountingDepth', adsk.core.ValueInput.createByString("ceil(Depth/Space)*Space"), 'mm', '')
+    
 
         # get the values of the screw
         ########################################################################################################
@@ -109,13 +82,13 @@ def run(context):
         # Get the root component of the active design.
         rootComp = design.rootComponent
 
-        # Create a new sketch on the xy plane.
-        sketches = rootComp.sketches;
-        xyPlane = rootComp.xYConstructionPlane
 
         ########################################################################################################
         # create screw body 
         ########################################################################################################
+        # Create a new sketch on the xy plane.
+        sketches = rootComp.sketches;
+        xyPlane = rootComp.xYConstructionPlane
         sketch = sketches.add(xyPlane)
         sketch.name = "Body"
 
@@ -210,54 +183,56 @@ def run(context):
 
         s = math.pow(s,2)/R1
         sin_s = (math.sin(math.pi/3)*(s))
-        cos_s = (math.cos(math.pi/3)*(s))
+        cos_s = (math.cos(math.pi/3)*(s)) 
 
         # Draw polygon
         #####################################################################################################
-        k_t = 0
+        # Create the 3D points for the hex sketch
+        p1 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(0, s,0))
+        p2 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(sin_s,cos_s,0))
+        p3 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(sin_s,-cos_s,0))
+        p4 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(0,-s,0))
+        p5 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(-sin_s,-cos_s,0))
+        p6 = sketch_hex.sketchPoints.add(adsk.core.Point3D.create(-sin_s, cos_s,0))
+
+        # Create lines 
         hex_lines = sketch_hex.sketchCurves.sketchLines
-        l1 = hex_lines.addByTwoPoints(adsk.core.Point3D.create(0, s,k_t), adsk.core.Point3D.create(sin_s,cos_s,k_t))
-        l2 = hex_lines.addByTwoPoints(l1.endSketchPoint, adsk.core.Point3D.create(sin_s,-cos_s,k_t))
-        l3 = hex_lines.addByTwoPoints(l2.endSketchPoint, adsk.core.Point3D.create(0,-s,k_t))
-        l4 = hex_lines.addByTwoPoints(l3.endSketchPoint, adsk.core.Point3D.create(-sin_s,-cos_s,k_t))
-        l5 = hex_lines.addByTwoPoints(l4.endSketchPoint, adsk.core.Point3D.create(-sin_s, cos_s,k_t))
-        l6 = hex_lines.addByTwoPoints(l5.endSketchPoint, adsk.core.Point3D.create(0, s,k_t))
+        l1 = hex_lines.addByTwoPoints(p1, p2)
+        l2 = hex_lines.addByTwoPoints(p2, p3)
+        l3 = hex_lines.addByTwoPoints(p3, p4)
+        l4 = hex_lines.addByTwoPoints(p4, p5)
+        l5 = hex_lines.addByTwoPoints(p5, p6)
+        l6 = hex_lines.addByTwoPoints(p6, p1)
 
         # Add dimensions
         ######################################################################################################
+        sketch_hex.sketchDimensions.addDistanceDimension(p1, sketch_hex.originPoint, 2, adsk.core.Point3D.create(d2, 2*s/4, 0))
+        sketch_hex.sketchDimensions.addDistanceDimension(p2, sketch_hex.originPoint, 2, adsk.core.Point3D.create(d2*2/3, 1*s/4, 0))
+        sketch_hex.sketchDimensions.addDistanceDimension(p3, sketch_hex.originPoint, 2, adsk.core.Point3D.create(d2*2/3, -1*s/4, 0))
+        sketch_hex.sketchDimensions.addDistanceDimension(p4, sketch_hex.originPoint, 2, adsk.core.Point3D.create(d2, -2*s/4, 0))
+        
         sketch_hex.sketchDimensions.addDistanceBetweenLineAndPlanarSurfaceDimension(l2, rootComp.xYConstructionPlane)
         sketch_hex.sketchDimensions.addDistanceBetweenLineAndPlanarSurfaceDimension(l5, rootComp.xYConstructionPlane)
 
-        sketch_hex.sketchDimensions.addDistanceDimension(l1.startSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, s/2, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l1.endSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, -s/2, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l3.startSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, s/2, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l3.endSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, -s/2, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l5.startSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, s/2, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l5.endSketchPoint, sketch_hex.originPoint, 2, adsk.core.Point3D.create(-d2, -s/2, 0))
-
-        sketch_hex.sketchDimensions.addDistanceDimension(l1.startSketchPoint, sketch_hex.originPoint, 1, adsk.core.Point3D.create(1, 0, 0))
-        sketch_hex.sketchDimensions.addDistanceDimension(l3.endSketchPoint, sketch_hex.originPoint, 1, adsk.core.Point3D.create(0, 0, 0))
-
-
         # Add constraints 
         #####################################################################################################
-        sketch_hex.geometricConstraints.addCoincident(l6.endSketchPoint, l1.startSketchPoint)
-        sketch_hex.geometricConstraints.addVertical(hex_lines.item(1))
-        sketch_hex.geometricConstraints.addVertical(hex_lines.item(4))
+        sketch_hex.geometricConstraints.addLineOnPlanarSurface(l1, hex_plane)
+        sketch_hex.geometricConstraints.addLineOnPlanarSurface(l3, hex_plane)
+        sketch_hex.geometricConstraints.addLineOnPlanarSurface(l5, hex_plane)
 
-        sketch_hex.geometricConstraints.addCoincident(sketch.geometry, l1.startSketchPoint)
-        sketch_hex.geometricConstraints.addCoincident(sketch.originPoint, l6.endSketchPoint)
+
+        sketch_hex.sketchDimensions.addAngularDimension(l1, l2, adsk.core.Point3D.create(0, 0, 0))
+        sketch_hex.sketchDimensions.addAngularDimension(l2, l3, adsk.core.Point3D.create(0, 0, 0))
+        sketch_hex.sketchDimensions.addAngularDimension(l3, l4, adsk.core.Point3D.create(0, 0, 0))
+        sketch_hex.sketchDimensions.addAngularDimension(l5, l6, adsk.core.Point3D.create(0, 0, 0))
 
         # Get the first profile from the sketch
         prof_hex = sketch_hex.profiles.item(0)  
 
-        # Get extrude features
+        # Cut feature
+        #####################################################################################################
         extrudes = rootComp.features.extrudeFeatures
-
-        distance = adsk.core.ValueInput.createByReal(-k)
-        hex = extrudes.addSimple(prof_hex, distance, adsk.fusion.FeatureOperations.CutFeatureOperation)
-
-        
+        hex = extrudes.addSimple(prof_hex, adsk.core.ValueInput.createByReal(-k), adsk.fusion.FeatureOperations.CutFeatureOperation)
 
     except:
         if ui:
